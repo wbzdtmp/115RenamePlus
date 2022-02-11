@@ -9,6 +9,8 @@
 // @grant               GM_notification
 // @grant               GM_xmlhttpRequest
 // ==/UserScript==
+// :set expandtab ts=4 sw=4 ai
+// :%retab
 
 /*
  * @param suffix            后缀，就是扩展名
@@ -17,7 +19,8 @@
     // 按钮
     let rename_list = `
             <li id="rename_list">
-                <a id="rename_video_javbus_detail" class="mark" href="javascript:;"><i class="icon-operate ifo-linktask"></i><span>视频改名javbus详情页</span></a>
+                <a id="rename_actor_title_en" class="mark" href="javascript:;"><i class="icon-operate ifo-linktask"></i><span>rename_actor_title_en</span></a>
+                <a id="rename_actor_title_jp" class="mark" href="javascript:;"><i class="icon-operate ifo-linktask"></i><span>rename_actor_title_jp</span></a>
                 <!-- 处理视频分段，转成_P1格式-->
                 <a id="video_part_format" class="mark" href="javascript:;"><i class="icon-operate ifo-tag"></i><span>格式化视频分段</span></a>
             </li>
@@ -44,9 +47,13 @@
         let open_dir = $("div#js_float_content li[val='open_dir']");
         if (open_dir.length !== 0 && $("li#rename_list").length === 0) {
             open_dir.before(rename_list);
-            $("a#rename_video_javbus_detail").click(
+            $("a#rename_actor_title_en").click(
                 function () {
-                    rename(renameJavbusDetail, "javbus", "video", false);
+                    rename(renameJavbusDetail, "javbus", "video", false, "en");
+                });
+            $("a#rename_actor_title_jp").click(
+                function () {
+                    rename(renameJavbusDetail, "javbus", "video", false, "jp");
                 });
             $("a#video_part_format").click(
                 function () {
@@ -61,11 +68,12 @@
     /**
      * 执行改名方法
      * @param call       回调函数
-     * @param site      网站
-     * @param rntype      改名类型 video picture
-     * @param ifAddDate   是否添加时间
+     * @param site       网站
+     * @param rntype     改名类型 video picture
+     * @param ifAddDate  是否添加时间
+     * @param lang       标题语言
      */
-    function rename(call, site, rntype, ifAddDate ) {
+    function rename(call, site, rntype, ifAddDate, lang) {
         // 获取所有已选择的文件
         let list = $("iframe[rel='wangpan']")
             .contents()
@@ -111,7 +119,7 @@
                             let ifChineseCaptions = checkifChineseCaptions(VideoCode.fh, file_name);
                             // 执行查询
                             console.log("开始查询");
-                            call(fid, rntype, VideoCode.fh, suffix, VideoCode.if4k, ifChineseCaptions, VideoCode.part, ifAddDate);
+                            call(fid, rntype, VideoCode.fh, suffix, VideoCode.if4k, ifChineseCaptions, VideoCode.part, ifAddDate, lang);
                         } else if ( rntype=="picture" ){
                             // 是图片时，向part传图片名冗余，不要中字判断，只在页面获取编号
                             // 图片名冗余
@@ -119,7 +127,7 @@
                             let ifChineseCaptions;
                             // 执行查询
                             console.log("开始查询");
-                            call(fid, rntype, VideoCode.fh, suffix, VideoCode.if4k, ifChineseCaptions, picCaptions, ifAddDate);
+                            call(fid, rntype, VideoCode.fh, suffix, VideoCode.if4k, ifChineseCaptions, picCaptions, ifAddDate, lang);
                         }
 
                     }
@@ -136,19 +144,20 @@
      * @param rntype            改名类型 video picture
      * @param fh                番号
      * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
+     * @param ifChineseCaptions 是否有中文字幕
      * @param part              视频分段，图片冗余文件名
-     * @param ifAddDate              是否添加时间
-     * @param searchUrl               请求地址
+     * @param ifAddDate         是否添加时间
+     * @param searchUrl         请求地址
+     * @param lang              标题语言
      */
-    function renameJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, javbusSearch);
+    function renameJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, lang) {
+        requestJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, javbusSearch, lang);
     }
-    function requestJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
+    function requestJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl, lang) {
         let title;
         let date;
-        let moviePage = javbusBaseEn + fh;
-        let actorPage = javbusBase + fh;
+        let moviePage = javbusBase + fh;
+        let enPage = javbusBaseEn + fh;
         let actors = [];
 
         // 获取javbus详情页内信息
@@ -156,17 +165,26 @@
             console.log("处理详情页：" + moviePage);
             if ( rntype=="picture" ){
                 resolve();
-            } else if ( rntype=="video" ){
-                await getJavbusTitle(moviePage);
-                await getJavbusActor(actorPage);
-                console.log('final 演员：'+actors+' '+'标题：'+title);
+            } else if ( rntype=="video" ) {
+                if ( lang=="en" ) {
+                    await getActorTitle(moviePage);
+                    // cover the title to English title, which has removed actor info
+                    await getEnTitle(enPage);
+                    console.log('final 演员：'+actors+' '+'标题：'+title);
+                } else {
+                    // lang == jp
+                    await getActorTitle(moviePage);
+                    // The Jp title already has actors name, remove actor info
+                    actors = [];
+                    console.log('final 标题：'+title);
+                }
                 resolve();
             }else{
                 resolve();
             }
         });
 
-        function getJavbusTitle(url) {
+        function getEnTitle(url) {
             return new Promise((resolve, reject) => {
                 GM_xmlhttpRequest({
                     method: "GET",
@@ -178,6 +196,8 @@
                             .find("h3")
                             .html();
                         title = title.slice(fh.length+1);
+                        // remove actors' english names
+                        title = title.split(':')[0].trim()
                         // 时间
                         date = response
                                 .find("p:nth-of-type(2)")
@@ -190,13 +210,18 @@
             });
         }
 
-        function getJavbusActor(url) {
+        function getActorTitle(url) {
             return new Promise((resolve, reject) => {
                 GM_xmlhttpRequest({
                     method: "GET",
                     url: url,
                     onload: xhr => {
                         let response = $(xhr.responseText);
+                        // 标题
+                        title = response
+                            .find("h3")
+                            .html();
+                        title = title.slice(fh.length+1);
                         // 演员们
                         let actorTags = response.find("div.star-name").each(function(){
                             actors.push($(this).find("a").attr("title"));
@@ -285,7 +310,7 @@
      */
     function buildNewName(fh, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate) {
         if ( rntype=="video" ){
-            if (actor || title) {
+            if (title) {
                 let newName = String(fh);
                 // 是4k
                 if (if4k) {
@@ -298,17 +323,17 @@
                 if (part){
                     newName = newName + "_P" +  part;
                 }
-                // 有演员
-                if (actor) {
-                    newName = newName + " " + actor;
-                }
                 // 拼接标题 判断长度
                 if (title) {
                     newName = newName + " " + title;
-                    if ( newName.length > 200 ){
-                        newName = newName.substring(0, 200);
+                    if ( newName.length > 100 ){
+                        newName = newName.substring(0, 100);
                         newName += "...";
                     }
+                }
+                // 有演员
+                if (actor) {
+                    newName = newName + " : " + actor;
                 }
                 // 有时间
                 if (ifAddDate && date) {
@@ -336,13 +361,12 @@
     }
 
     /**
-     * 115名称不接受(\/:*?\"<>|)
+     * 115名称不接受(\/*?\"<>|)
      * @param name
      */
     function stringStandard(name) {
         return name.replace(/\\/g, "")
             .replace(/\//g, " ")
-            .replace(/:/g, " ")
             .replace(/\?/g, " ")
             .replace(/"/g, " ")
             .replace(/</g, " ")
