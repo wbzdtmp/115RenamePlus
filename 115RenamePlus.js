@@ -28,7 +28,8 @@
     let interval = setInterval(buttonInterval, 1000);
 
     // javbus
-    let javbusBase = "https://www.fanbus.blog/";
+    let javbusBase = "https://www.javbus.com/";
+    let javbusBaseEn = "https://www.javbus.com/en/";
     // 有码
     let javbusSearch = javbusBase + "search/";
     // 无码
@@ -45,7 +46,7 @@
             open_dir.before(rename_list);
             $("a#rename_video_javbus_detail").click(
                 function () {
-                    rename(renameJavbusDetail, "javbus", "video", true);
+                    rename(renameJavbusDetail, "javbus", "video", false);
                 });
             $("a#video_part_format").click(
                 function () {
@@ -146,17 +147,30 @@
     function requestJavbusDetail(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
         let title;
         let date;
-        let moviePage = javbusBase + fh;
+        let moviePage = javbusBaseEn + fh;
+        let actorPage = javbusBase + fh;
         let actors = [];
+
         // 获取javbus详情页内信息
-        let getJavbusDetail = new Promise((resolve, reject) => {
+        let getJavbusDetail = new Promise(async (resolve, reject) => {
             console.log("处理详情页：" + moviePage);
             if ( rntype=="picture" ){
                 resolve();
             } else if ( rntype=="video" ){
+                await getJavbusTitle(moviePage);
+                await getJavbusActor(actorPage);
+                console.log('final 演员：'+actors+' '+'标题：'+title);
+                resolve();
+            }else{
+                resolve();
+            }
+        });
+
+        function getJavbusTitle(url) {
+            return new Promise((resolve, reject) => {
                 GM_xmlhttpRequest({
                     method: "GET",
-                    url: moviePage,
+                    url: url,
                     onload: xhr => {
                         let response = $(xhr.responseText);
                         // 标题
@@ -169,6 +183,20 @@
                                 .find("p:nth-of-type(2)")
                                 .html();
                         date = date.match(/\d{4}\-\d{2}\-\d{2}/);
+                        console.log('标题：'+title);
+                        resolve();
+                    }
+                });
+            });
+        }
+
+        function getJavbusActor(url) {
+            return new Promise((resolve, reject) => {
+                GM_xmlhttpRequest({
+                    method: "GET",
+                    url: url,
+                    onload: xhr => {
+                        let response = $(xhr.responseText);
                         // 演员们
                         let actorTags = response.find("div.star-name").each(function(){
                             actors.push($(this).find("a").attr("title"));
@@ -177,10 +205,9 @@
                         resolve();
                     }
                 });
-            }else{
-                resolve();
-            }
-        });
+            });
+        }
+
         function setName(){
             return new Promise((resolve, reject) => {
                 if(moviePage){
@@ -258,7 +285,7 @@
      */
     function buildNewName(fh, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate) {
         if ( rntype=="video" ){
-            if (title) {
+            if (actor || title) {
                 let newName = String(fh);
                 // 是4k
                 if (if4k) {
@@ -276,10 +303,12 @@
                     newName = newName + " " + actor;
                 }
                 // 拼接标题 判断长度
-                newName = newName + " " + title;
-                if ( newName.length > 200 ){
-                    newName = newName.substring(0, 200);
-                    newName += "...";
+                if (title) {
+                    newName = newName + " " + title;
+                    if ( newName.length > 200 ){
+                        newName = newName.substring(0, 200);
+                        newName += "...";
+                    }
                 }
                 // 有时间
                 if (ifAddDate && date) {
