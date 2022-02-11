@@ -1,44 +1,25 @@
 // ==UserScript==
-// @name                115RenamePlus
+// @name                115RenamePlus_WBZD
 // @namespace           https://github.com/LSD08KM/115RenamePlus
-// @version             0.8.10 格式化视频分段 4K 增加icon
+// @version             0.1.0 init new one
 // @description         115RenamePlus(根据现有的文件名<番号>查询并修改文件名)
-// @author              db117, FAN0926, LSD08KM
+// @author              db117, FAN0926, LSD08KM, WBZD
 // @include             https://115.com/*
 // @domain              javbus.com
-// @domain              fanbus.blog
-// @domain              busdmm.club
-// @domain              seedmm.blog
-// @domain              avmoo.host
-// @domain              avmoo.cyou
-// @domain              avsox.website
-// @domain              adult.contents.fc2.com
-// @domain              mgstage.com
 // @grant               GM_notification
 // @grant               GM_xmlhttpRequest
 // ==/UserScript==
 
-    /*
-     * @param suffix            后缀，就是扩展名
-     */
+/*
+ * @param suffix            后缀，就是扩展名
+ */
 (function () {
     // 按钮
     let rename_list = `
             <li id="rename_list">
-                <a id="rename_video_avmoo_javbus" class="mark" href="javascript:;"><i class="icon-operate ifo-video-play"></i><span>视频改名avmoo+javbus</span></a>
-                <a id="rename_video_avmoo" class="mark" href="javascript:;"><i class="icon-operate ifo-video-play"></i><span>视频改名avmoo</span></a>
-                <a id="rename_video_javbus" class="mark" href="javascript:;"><i class="icon-operate ifo-video-play"></i><span>视频改名javbus</span></a>
-                <a id="rename_video_FC2" class="mark" href="javascript:;"><i class="icon-operate ifo-video-play"></i><span>视频改名FC2</span></a>
-                <a id="rename_video_mgstage" class="mark" href="javascript:;"><i class="icon-operate ifo-video-play"></i><span>视频改名mgstage</span></a>
+                <a id="rename_video_javbus_detail" class="mark" href="javascript:;"><i class="icon-operate ifo-linktask"></i><span>视频改名javbus详情页</span></a>
                 <!-- 处理视频分段，转成_P1格式-->
                 <a id="video_part_format" class="mark" href="javascript:;"><i class="icon-operate ifo-tag"></i><span>格式化视频分段</span></a>
-                <!--
-                <a id="rename_video_javbus_detail" class="mark" href="javascript:;"><i class="icon-operate ifo-linktask"></i><span>视频改名javbus详情页</span></a>
-                <a id="rename_picture_avmoo" class="mark" href="javascript:;"><i class="icon-operate ifo-cover"></i><span>图片改名avmoo</span></a>
-                <a id="rename_picture_javbus" class="mark" href="javascript:;"><i class="icon-operate ifo-cover"></i><span>图片改名javbus</span></a>
-                <a id="rename_picture_FC2" class="mark" href="javascript:;"><i class="icon-operate ifo-cover"></i><span>图片改名FC2</span></a>
-                <a id="rename_picture_mgstage" class="mark" href="javascript:;"><i class="icon-operate ifo-cover"></i><span>图片改名mgstage</span></a>
-                -->
             </li>
         `;
     /**
@@ -53,18 +34,6 @@
     // 无码
     let javbusUncensoredSearch = javbusBase + "uncensored/search/";
 
-    // avmoo
-    // 有码
-    let avmooSearch = "https://avmoo.cyou/cn/search/";
-    // 无码
-    let avmooUncensoredSearch = "https://avsox.website/cn/search/";
-
-    //FC2
-    let Fc2Search = "https://adult.contents.fc2.com/article/";
-
-    //mgstage
-    let mgstageSearch = "https://www.mgstage.com/product/product_detail/";
-
     'use strict';
 
     /**
@@ -74,26 +43,6 @@
         let open_dir = $("div#js_float_content li[val='open_dir']");
         if (open_dir.length !== 0 && $("li#rename_list").length === 0) {
             open_dir.before(rename_list);
-            $("a#rename_video_avmoo").click(
-                function () {
-                    rename(renameAvmoo, "avmoo", "video", true);
-                });
-            $("a#rename_video_javbus").click(
-                function () {
-                    rename(renameJavbus, "javbus", "video", true);
-                });
-            $("a#rename_video_FC2").click(
-                function () {
-                    rename(renameFc2, "fc2", "video", true);
-                });
-            $("a#rename_video_mgstage").click(
-                function () {
-                    rename(renameMgstage, "mgstage", "video", true);
-                });
-            $("a#rename_video_avmoo_javbus").click(
-                function () {
-                    rename(renameAvmooJavbus, "avmoo", "video", true);
-                });
             $("a#rename_video_javbus_detail").click(
                 function () {
                     rename(renameJavbusDetail, "javbus", "video", true);
@@ -101,22 +50,6 @@
             $("a#video_part_format").click(
                 function () {
                     videoPartFormat();
-                });
-            $("a#rename_picture_avmoo").click(
-                function () {
-                    rename(renameAvmoo, "avmoo", "picture", true);
-                });
-            $("a#rename_picture_javbus").click(
-                function () {
-                    rename(renameJavbus, "javbus", "picture", true);
-                });
-            $("a#rename_picture_FC2").click(
-                function () {
-                    rename(renameFc2, "fc2", "picture", true);
-                });
-            $("a#rename_picture_mgstage").click(
-                function () {
-                    rename(renameMgstage, "mgstage", "picture", true);
                 });
             console.log("添加按钮");
             // 结束定时任务
@@ -194,130 +127,6 @@
         // if(!Main.ReInstance({type:'', star:'', is_q: '', is_share:''})){window.location.reload();}
         // if(list){window.location.reload();}
     }
-    /**
-     * 通过avmoo搜索+javbus详情页进行查询
-     * @param fid               文件id
-     * @param rntype            改名类型 video picture
-     * @param fh                番号
-     * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
-     * @param part              视频分段，图片冗余文件名
-     * @param ifAddDate              是否添加时间
-     * @param searchUrl               请求地址
-     */
-    function renameAvmooJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestAvmooJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, avmooSearch);
-    }
-    function requestAvmooJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
-        let title;
-        let fh_o;   //网页上的番号
-        let date;
-        let moviePage;
-        let actors = [];
-        let url_s = searchUrl + fh;
-        let getAvmooSearch = new Promise((resolve, reject) => {
-            console.log("处理搜索页 " + url_s);
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url_s,
-                onload: xhr => {
-                    let response = $(xhr.responseText);
-                    if (!(response.find("div.alert").length)) {
-                        /*
-                        // 标题
-                        title = response
-                            .find("div.photo-frame img")
-                            .attr("title");
-                        // 时间
-                        date = response
-                            .find("div.photo-info > span")
-                            .html();
-                        date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                        */
-                        // 番号
-                        fh_o = response
-                            .find("div.photo-info date:first")
-                            .html();
-                        // 详情页
-                        moviePage = response
-                            .find("a.movie-box")
-                            .attr("href");
-                        console.log("获取到 " + fh_o );
-                        resolve(moviePage);
-                    }
-                }
-            });
-        });
-        function getJavbusDetail(){
-            return new Promise((resolve, reject) => {
-                if ( rntype=="picture" ){
-                    resolve();
-                } else if ( rntype=="video" ){
-                    if(moviePage){
-                        moviePage = javbusBase + fh_o;
-                        console.log("处理详情页：" + moviePage);
-                        GM_xmlhttpRequest({
-                            method: "GET",
-                            url: moviePage,
-                            onload: xhr => {
-                                let response = $(xhr.responseText);
-                                // 标题
-                                title = response
-                                    .find("h3")
-                                    .html();
-                                title = title.slice(fh_o.length+1);
-                                // 时间
-                                date = response
-                                        .find("p:nth-of-type(2)")
-                                        .html();
-                                date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                                // 演员们
-                                let actorTags = response.find("div.star-name").each(function(){
-                                    actors.push($(this).find("a").attr("title"));
-                                });
-                                console.log('演员 '+actors);
-                                /*
-                                for ( let actor of actorTags) {
-                                    actors.push(actor.find("a").attr("title"));
-                                }
-                                */
-                                resolve();
-                            }
-                        });
-                    }else{
-                        resolve();
-                    }
-                }
-            });
-        }
-        function setName(){
-            return new Promise((resolve, reject) => {
-                if(moviePage){
-                    let actor = actors.toString();
-                    console.log(actor);
-                    // 构建新名称
-                    let newName = buildNewName(fh_o, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate);
-                    if (newName) {
-                        // 修改名称
-                        send_115(fid, newName, fh_o);
-                        console.log("新名: "+newName);
-                    }
-                    resolve(newName);
-                }else if (searchUrl !== javbusUncensoredSearch) {
-                    console.log("查询无码 " + searchUrl);
-                    // 进行无码重查询
-                    requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, javbusUncensoredSearch);
-                }else {
-                    resolve("没有查到结果");
-                }
-            });
-        }
-        getAvmooSearch.then(getJavbusDetail)
-            .then(setName,setName)
-            .then(function(result){
-                console.log("改名结束，" + result);
-            });
-    }
 
     /**
      * 通过javbus详情页进行查询
@@ -342,7 +151,9 @@
         // 获取javbus详情页内信息
         let getJavbusDetail = new Promise((resolve, reject) => {
             console.log("处理详情页：" + moviePage);
-            if(moviePage){
+            if ( rntype=="picture" ){
+                resolve();
+            } else if ( rntype=="video" ){
                 GM_xmlhttpRequest({
                     method: "GET",
                     url: moviePage,
@@ -398,383 +209,6 @@
     }
 
     /**
-     * 通过javbus进行查询
-     * 请求javbus,并请求115进行改名
-     * @param fid               文件id
-     * @param rntype            改名类型 video picture
-     * @param fh                番号
-     * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
-     * @param part              视频分段，图片冗余文件名
-     * @param ifAddDate              是否添加时间
-     * @param searchUrl               请求地址
-     */
-    function renameJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, javbusSearch);
-    }
-    function requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
-        let title;
-        let fh_o;   //网页上的番号
-        let date;
-        let moviePage;
-        let actors = [];
-        let url_s = searchUrl + fh;
-        let getJavbusSearch = new Promise((resolve, reject) => {
-            console.log("处理搜索页：" + url_s);
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url_s,
-                onload: xhr => {
-                    let response = $(xhr.responseText);
-                    /*
-                    // 标题
-                    title = response
-                        .find("div.photo-frame img")
-                        .attr("title");
-                    // 时间
-                    date = response
-                            .find("div.photo-info > span")
-                            .html();
-                    date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                    */
-                    // 番号
-                    fh_o = response
-                        .find("div.photo-info date:first")
-                        .html();
-                    // 详情页
-                    moviePage = response
-                        .find("a.movie-box")
-                        .attr("href");
-                    console.log("获取到 " +  fh_o );
-                    resolve(moviePage);
-                }
-            });
-        });
-        function getJavbusDetail(){
-            return new Promise((resolve, reject) => {
-                if ( rntype=="picture" ){
-                    console.log("跳过详情页");
-                    resolve();
-                } else if ( rntype=="video" ){
-                    if(moviePage){
-                        console.log("处理详情页：" + moviePage);
-                        GM_xmlhttpRequest({
-                            method: "GET",
-                            url: moviePage,
-                            onload: xhr => {
-                                let response = $(xhr.responseText);
-                                // 标题
-                                title = response
-                                    .find("h3")
-                                    .html();
-                                title = title.slice(fh.length+1);
-                                // 时间
-                                date = response
-                                        .find("p:nth-of-type(2)")
-                                        .html();
-                                date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                                // 演员们
-                                let actorTags = response.find("div.star-name").each(function(){
-                                    actors.push($(this).find("a").attr("title"));
-                                });
-                                console.log('演员 '+actors);
-                                /*
-                                for ( let actor of actorTags) {
-                                    actors.push(actor.find("a").attr("title"));
-                                }
-                                */
-                                resolve();
-                            }
-                        });
-                    }else{
-                        resolve();
-                    }
-                }
-            });
-        }
-        function setName(){
-            return new Promise((resolve, reject) => {
-                if(moviePage){
-                    let actor = actors.toString();
-                    console.log(actor);
-                    // 构建新名称
-                    let newName = buildNewName(fh_o, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate);
-                    if (newName) {
-                        // 修改名称
-                        send_115(fid, newName, fh_o);
-                        console.log("新名: "+newName);
-                    }
-                    resolve(newName);
-                }else if (searchUrl !== javbusUncensoredSearch) {
-                    console.log("查询无码 " + searchUrl);
-                    // 进行无码重查询
-                    requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, javbusUncensoredSearch);
-                }else {
-                    resolve("没有查到结果");
-                }
-            });
-        }
-        getJavbusSearch.then(getJavbusDetail)
-            .then(setName,setName)
-            .then(function(result){
-                console.log("改名结束，" + result);
-            });
-    }
-
-    /**
-     * 通过avmoo进行查询
-     * 请求avmoo,并请求115进行改名
-     * @param fid               文件id
-     * @param rntype            改名类型 video picture
-     * @param fh                番号
-     * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
-     * @param part              视频分段，图片冗余文件名
-     * @param ifAddDate              是否添加时间
-     * @param searchUrl               请求地址
-     */
-    function renameAvmoo(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestAvmoo(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, avmooSearch);
-    }
-    function requestAvmoo(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
-        let title;
-        let fh_o;   //网页上的番号
-        let date;
-        let moviePage;
-        let actors = [];
-        let url_s = searchUrl + fh;
-        let getAvmooSearch = new Promise((resolve, reject) => {
-            console.log("处理搜索页 " + url_s);
-            GM_xmlhttpRequest({
-                method: "GET",
-                url: url_s,
-                onload: xhr => {
-                    let response = $(xhr.responseText);
-                    if (!(response.find("div.alert").length)) {
-                        /*
-                        // 标题
-                        title = response
-                            .find("div.photo-frame img")
-                            .attr("title");
-                        // 时间
-                        date = response
-                            .find("div.photo-info > span")
-                            .html();
-                        date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                        */
-                        // 番号
-                        fh_o = response
-                            .find("div.photo-info date:first")
-                            .html();
-                        // 详情页
-                        moviePage = response
-                            .find("a.movie-box")
-                            .attr("href");
-                        console.log("获取到 " + fh_o );
-                        resolve(moviePage);
-                    }
-                }
-            });
-        });
-        function getAvmooDetail(){
-            return new Promise((resolve, reject) => {
-                if ( rntype=="picture" ){
-                    console.log("跳过详情页");
-                    resolve();
-                } else if ( rntype=="video" ){
-                    if(moviePage){
-                        console.log("处理影片页 " + moviePage);
-                        GM_xmlhttpRequest({
-                            method: "GET",
-                            url: moviePage,
-                            onload: xhr => {
-                                let response = $(xhr.responseText);
-                                // 标题
-                                title = response
-                                    .find("h3")
-                                    .html();
-                                title = title.slice(fh.length+1);
-                                // 时间
-                                date = response
-                                        .find("p:nth-of-type(2)")
-                                        .html();
-                                date = date.match(/\d{4}\-\d{2}\-\d{2}/);
-                                // 演员们
-                                let actorTags = response.find("a.avatar-box").each(function(){
-                                    actors.push($(this).find("span").html());
-                                });
-                                console.log('演员 '+actors);
-                                resolve();
-                            },
-                        });
-                    }else{
-                        resolve();
-                    }
-                }
-            });
-        }
-        function setName(){
-            return new Promise((resolve, reject) => {
-                if(moviePage){
-                    let actor = actors.toString();
-                    console.log(actor);
-                    // 构建新名称
-                    let newName = buildNewName(fh_o, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate);
-                    if (newName) {
-                        // 修改名称
-                        send_115(fid, newName, fh_o);
-                        console.log("新名: "+newName);
-                    }
-                    resolve(newName);
-                } else if (searchUrl !== avmooUncensoredSearch) {
-                    // 进行无码重查询
-                    requestAvmoo(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, avmooUncensoredSearch);
-                }else {
-                    resolve("没有查到结果");
-                }
-            });
-        }
-        getAvmooSearch.then(getAvmooDetail)
-            .then(setName,setName)
-            .then(function(result){
-                console.log("改名结束，" + result);
-            });
-    }
-
-    /**
-     * 通过FC2进行查询
-     * 请求FC2,并请求115进行改名
-     * @param fid               文件id
-     * @param fh                番号
-     * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
-     * @param ifAddDate           是否带时间
-     * @param searchUrl         请求地址*
-     */
-    function renameFc2(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestFC2(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, Fc2Search);
-    }
-    function requestFC2(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: searchUrl + fh +"/",
-            onload: xhr => {
-                console.log("处理影片页 " + searchUrl + fh +"/");
-                // 匹配标题
-                let response = $(xhr.responseText);
-                let title = response
-                    .find("div.items_article_MainitemThumb img")
-                    .attr("title");
-                console.log("获取到标题 " + title );
-                // 卖家
-                let user = response
-                            .find("div.items_article_headerInfo > ul > li a:last ")
-                            .html();
-                // 上架时间 上架时间 : 2020/06/17
-                let date = response
-                            .find("div.items_article_Releasedate p")
-                            .html();
-                date = date.replace(/\s+/g,"").replace(/:/g, "").replace(/\//g, "-");
-                if ( rntype=="picture" ){
-                    if ( fh && title ) {
-                        title="";
-                        user="";
-                        date="";
-                    }
-                }
-                fh = "FC2-PPV-" + fh;
-
-                if (title) {
-                    // 构建新名称
-                    let newName = buildNewName(fh, rntype, suffix, if4k, ifChineseCaptions, part, title, date, user, ifAddDate);
-                    if (newName) {
-                        // 修改名称
-                        send_115(fid, newName, fh);
-                    }
-                } else if (searchUrl !== javbusUncensoredSearch) {
-                    GM_notification(getDetails(fh, "商品页可能已消失"));
-                    // 进行无码重查询
-                    // requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, javbusUncensoredSearch);
-                }
-            }
-        })
-    }
-
-    /**
-     * 通过mgstage进行查询
-     * 请求mgstage,并请求115进行改名
-     * @param fid               文件id
-     * @param fh                番号
-     * @param suffix            后缀
-     * @param ifChineseCaptions   是否有中文字幕
-     * @param part            是图片时，向part传图片名冗余
-     * @param ifAddDate           是否带时间
-     * @param searchUrl         请求地址
-     */
-    function renameMgstage(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate) {
-        requestmgstage(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, mgstageSearch);
-    }
-    function requestmgstage(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, ifAddDate, searchUrl) {
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: searchUrl + fh +"/",
-            onload: xhr => {
-                console.log("处理影片页 " + searchUrl + fh +"/");
-                // 匹配标题
-                let response = $(xhr.responseText);
-                let title = response
-                    .find("div.common_detail_cover > h1")
-                    .html()
-                    .trim();
-                console.log("获取到标题 " + title );
-                // 出演
-                let actor = response
-                            .find("div.detail_data > table:last > tbody > tr:first > td")
-                            .html();
-                let actors = [];
-                // 判断<a>
-                if (actor.toString().match(/<.*>/)) {
-                    let actorTags = response.find("div.detail_data > table:last > tbody > tr:first > td > a").each(function(){
-                        actors.push($(this).html().trim());
-                    });
-                    actors = actors.toString();
-                }else{
-                    actors = actor.trim();
-                }
-                // 品番：  200GANA-2295
-                // 因界面多语言问题，无法获取
-                // 配信開始日：   2020/06/23
-                let date = response
-                            .find("div.detail_data > table:last > tbody > tr:eq(4) > td")
-                            .html()
-                            .trim();
-                date = date.replace(/\s+/g,"").replace(/:/g, "").replace(/\//g, "-").trim();
-                if ( rntype=="picture" ){
-                    if ( fh && title ) {
-                        title="";
-                        actors="";
-                        date="";
-                    }
-                }
-
-                if (title) {
-                    // 构建新名称
-                    let newName = buildNewName(fh, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actors, ifAddDate);
-                    if (newName) {
-                        // 修改名称
-                        send_115(fid, newName, fh);
-                    }
-                } else if (searchUrl !== javbusUncensoredSearch) {
-                    GM_notification(getDetails(fh, "商品页可能已消失"));
-                    // 进行无码重查询
-                    // requestJavbus(fid, rntype, fh, suffix, if4k, ifChineseCaptions, part, javbusUncensoredSearch);
-                }
-
-            }
-        })
-    }
-
-    /**
      * 图片名冗余
      * @param fh    番号
      * @param title 标题
@@ -814,12 +248,12 @@
      * @param fh                番号
      * @param rntype            改名类型 video picture
      * @param suffix            后缀，扩展名
-     * @param ifChineseCaptions   是否有中文字幕
+     * @param ifChineseCaptions 是否有中文字幕
      * @param part              视频分段，图片冗余文件名
      * @param title             番号标题
      * @param date              日期
      * @param actor             演员
-     * @param ifAddDate           是否加日期
+     * @param ifAddDate         是否加日期
      * @returns {string}        新名称
      */
     function buildNewName(fh, rntype, suffix, if4k, ifChineseCaptions, part, title, date, actor, ifAddDate) {
