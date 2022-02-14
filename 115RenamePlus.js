@@ -487,35 +487,35 @@
             t = title.match(/T28[\-_]\d{3,4}/);
             // 一本道
             if (!t) {
-                t = title.match(/1PONDO[\-_ ]\d{6}[\-_]\d{2,4}/);
+                t = title.match(/1PONDO[\-_ ]\d{6}[\-_]\d{2,4}/i);
                 if (t) {
                     t = t.toString().replace("1PONDO_", "")
                         .replace("1PONDO-", "");
                 }
             }if (!t) {
                 //10MUSUME
-                t = title.match(/10MUSUME[\-_]\d{6}[\-_]\d{2,4}/);
+                t = title.match(/10MUSUME[\-_]\d{6}[\-_]\d{2,4}/i);
                 if (t) {
                     t = t.toString().replace("10MUSUME", "")
                         .replace("10MUSUME-", "");
                 }
             }
             if (!t) {
-                t = title.match(/HEYZO[\-_]{0,1}\d{4}/);
+                t = title.match(/HEYZO[\-_]{0,1}\d{4}/i);
             }
             if (!t) {
-                t = title.match(/S2M(?:BD)?[\-_]{0,1}\d{1,3}/);
+                t = title.match(/S2M(?:BD)?[\-_]{0,1}\d{1,3}/i);
             }
             if (!t) {
                 // 加勒比
-                t = title.match(/CARIB[\-_ ]\d{6}[\-_]\d{3}/);
+                t = title.match(/CARIB[\-_ ]\d{6}[\-_]\d{3}/i);
                 if (t) {
                     t = t.toString().replace("CARIB-", "")
                         .replace("CARIB_", "");
                 }
             }if (!t) {
                 // 加勒比
-                t = title.match(/CARIBBEAN[\-_ ]\d{6}[\-_]\d{3}/);
+                t = title.match(/CARIBBEAN[\-_ ]\d{6}[\-_]\d{3}/i);
                 if (t) {
                     t = t.toString().replace("CARIBBEAN-", "")
                         .replace("CARIBBEAN", "");
@@ -523,11 +523,11 @@
             }
             if (!t) {
                 // 东京热
-                t = title.match(/N[-_]\d{4}/);
+                t = title.match(/N[-_]\d{4}/i);
             }
             if (!t) {
                 // Jukujo-Club | 熟女俱乐部
-                t = title.match(/JUKUJO[\-_]\d{4}/);
+                t = title.match(/JUKUJO[\-_]\d{4}/i);
             }
 
             // 通用
