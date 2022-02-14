@@ -504,6 +504,9 @@
                 t = title.match(/HEYZO[\-_]{0,1}\d{4}/);
             }
             if (!t) {
+                t = title.match(/S2M(?:BD)?[\-_]{0,1}\d{1,3}/);
+            }
+            if (!t) {
                 // 加勒比
                 t = title.match(/CARIB[\-_ ]\d{6}[\-_]\d{3}/);
                 if (t) {
