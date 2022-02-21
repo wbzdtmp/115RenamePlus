@@ -523,7 +523,7 @@
             }
             if (!t) {
                 // 东京热
-                t = title.match(/N[-_]\d{4}/i);
+                t = title.match(/[NK][-_]\d{4}/i);
             }
             if (!t) {
                 // Jukujo-Club | 熟女俱乐部
