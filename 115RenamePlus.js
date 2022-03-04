@@ -541,7 +541,7 @@
                 t = title.match(/[A-Z]+\d{3,5}/);
             }
             if (!t) {
-                t = title.match(/[A-Za-z]+[\-_]{0,1}\d+/);
+                t = title.match(/[A-Za-z]+[\-_]{0,1}[Ss]{0,1}\d+/);
             }
             if (!t) {
                 t = title.match(/\d+[\-_]{0,1}\d+/);
